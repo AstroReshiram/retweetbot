@@ -3,8 +3,8 @@ import json
 
 class Configuration:
 
-    def __init__(self):
-        self._file = open('config.json')
+    def __init__(self, filename):
+        self._file = open(filename)
         self._config = json.load(self._file)
         self._keys = self._config['TwitterKeys']
         self._settings = self._config['BotSettings']
