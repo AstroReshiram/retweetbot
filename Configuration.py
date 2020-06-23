@@ -24,3 +24,14 @@ class Configuration:
         self.break_time = self._settings['BreakTimeSeconds']
         self.end_of_queries_pause = self._settings['EndOfQueriesPauseSeconds']
 
+        # Master Control
+        self._master = self._config['MasterControl']
+        self.master_screen_name = self._master['ScreenName']
+        self.master_user_id = self._master['UserID']
+        self.master_password = self._master['Password']
+
+        # Debug Mode
+        self.debug_mode = self._str2bool(self._settings['DebugMode'])
+
+    def _str2bool(self, v):
+        return v.lower() in ("yes", "true", "t", "1")
