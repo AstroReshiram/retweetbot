@@ -41,33 +41,55 @@ class RetweetBot:
     def run(self):
         if self._debug_mode:
             print("Debug Mode: ON")
-        # self._check_mail()
-        self._retweet()
+        self._check_mail()
+        # self._retweet()
 
     def _check_mail(self):
         # Get list of mails
         try:
             message_list = self.api.list_direct_messages()
+
+            # Find and use only messages from the master owner
+            owner_messages = []
+            if message_list:
+                for message in message_list:
+                    if message.message_create['sender_id'] == self._master_id:
+                        owner_messages.append(message)
+                    # Debug only
+                    if self._debug_mode:
+                        print(message)
+                    self.api.destroy_direct_message(message.id)
+
+                # Look for password from owner
+                if owner_messages:
+                    owner_message = owner_messages[0]
+                    if "ILikePie3.142" in owner_message.message_create['message_data']['text']:
+                        if self._debug_mode:
+                            print("Password entered is correct")
+                        self.api.send_direct_message(message.message_create['sender_id'], "The password is correct!")
+
+                    else:
+                        if self._debug_mode:
+                            print("Password entered is incorrect")
+                        self.api.send_direct_message(owner_message.message_create['sender_id'],
+                                                     "Incorrect Password! Try again!")
+
+                # Check if message_list contains any new messages...
+                else:
+                    if self._debug_mode:
+                        print('No messages from master found')
+
+            else:
+                if self._debug_mode:
+                    print('No messages found')
+
         except tweepy.TweepError as error:
             print(error.reason)
-
-        owner_messages = []
-        for message in message_list:
-            if message.message_create['sender_id'] == self._master_id:
-                owner_messages.append(message)
-            # Debug only
-            if self._debug_mode:
-                print(message)
-
-
-        # Get Messages only by Owner with password
-
-
-        # Check mail sender and passwords
 
         # Read Mail
 
         # Perform actions and update
+
 
 
     def _retweet(self):
