@@ -41,16 +41,17 @@ class RetweetBot:
     def run(self):
         if self._debug_mode:
             print("Debug Mode: ON")
-        self._check_mail()
-        # self._retweet()
+        # self._check_mail()
+        self._block_list = self.api.blocks_ids()
+        self._retweet()
 
     def _check_mail(self):
         # Get list of mails
         try:
             message_list = self.api.list_direct_messages()
+            owner_messages = []
 
             # Find and use only messages from the master owner
-            owner_messages = []
             if message_list:
                 for message in message_list:
                     if message.message_create['sender_id'] == self._master_id:
@@ -67,6 +68,8 @@ class RetweetBot:
                         if self._debug_mode:
                             print("Password entered is correct")
                         self.api.send_direct_message(message.message_create['sender_id'], "The password is correct!")
+                        # Perform actions:
+
 
                     else:
                         if self._debug_mode:
@@ -86,14 +89,10 @@ class RetweetBot:
         except tweepy.TweepError as error:
             print(error.reason)
 
-        # Read Mail
-
-        # Perform actions and update
-
-
 
     def _retweet(self):
         total_retweeted = 2
+
         while True:
             for query in self.queries:
                 for tweet in tweepy.Cursor(self.api.search, query).items(self.tweets_queried):
@@ -111,16 +110,26 @@ class RetweetBot:
                             print('It\'s me! Ignoring me!')
                             time.sleep(self.step_pause)
                         else:
-                            if self.api.get_status(tweet.id).retweeted:
-                                print('I\'ve retweeted this! Ignoring!')
+                            # TODO: Add check check if user banned.
+                            if tweet.user.id in self._block_list:
+                                print('BLOCKED USER! Ignored~!')
+                                # self.api.send_direct_message(self._master_id, "I detected a BLOCKED user named " +
+                                #                              str(tweet.user.name) + "\nId: " + str(tweet.user.id) +
+                                #                              "\n\nhttps://twitter.com/" + str(tweet.user.screen_name) +
+                                #                              "/status/" + str(tweet.id))
                                 time.sleep(self.step_pause)
-                            else:
-                                tweet.retweet()
-                                print('Retweeted! - ID: ' + str(tweet.id) + ' | User:' + str(tweet.user.name)
-                                      + ' | UserID:' + str(tweet.user.id) + ' | Status: ' + str(tweet.text))
-                                total_retweeted = total_retweeted + 1
 
-                                time.sleep(self.retweet_period)  # Let's make this 30 secs
+                            else:
+                                if self.api.get_status(tweet.id).retweeted:
+                                    print('I\'ve retweeted this! Ignoring!')
+                                    time.sleep(self.step_pause)
+                                else:
+                                    tweet.retweet()
+                                    print('Retweeted! - ID: ' + str(tweet.id) + ' | User:' + str(tweet.user.name)
+                                          + ' | UserID:' + str(tweet.user.id) + ' | Status: ' + str(tweet.text))
+                                    total_retweeted = total_retweeted + 1
+
+                                    time.sleep(self.retweet_period)  # Let's make this 30 secs
 
                         print('-------------------------------------------------------------------')
 
