@@ -110,7 +110,6 @@ class RetweetBot:
                             print('It\'s me! Ignoring me!')
                             time.sleep(self.step_pause)
                         else:
-                            # TODO: Add check check if user banned.
                             if tweet.user.id in self._block_list:
                                 print('BLOCKED USER! Ignored~!')
                                 # self.api.send_direct_message(self._master_id, "I detected a BLOCKED user named " +
@@ -120,16 +119,24 @@ class RetweetBot:
                                 time.sleep(self.step_pause)
 
                             else:
-                                if self.api.get_status(tweet.id).retweeted:
-                                    print('I\'ve retweeted this! Ignoring!')
+                                if hasattr(tweet, "retweeted_status") and tweet.retweeted_status.user.id in self._block_list:
+                                    print('BLOCKED RETWEETER! Ignored~!')
+                                    # self.api.send_direct_message(self._master_id, "I detected a BLOCKED user named " +
+                                    #                              str(tweet.user.name) + "\nId: " + str(tweet.user.id) +
+                                    #                              "\n\nhttps://twitter.com/" + str(tweet.user.screen_name) +
+                                    #                              "/status/" + str(tweet.id))
                                     time.sleep(self.step_pause)
                                 else:
-                                    tweet.retweet()
-                                    print('Retweeted! - ID: ' + str(tweet.id) + ' | User:' + str(tweet.user.name)
-                                          + ' | UserID:' + str(tweet.user.id) + ' | Status: ' + str(tweet.text))
-                                    total_retweeted = total_retweeted + 1
+                                    if self.api.get_status(tweet.id).retweeted:
+                                        print('I\'ve retweeted this! Ignoring!')
+                                        time.sleep(self.step_pause)
+                                    else:
+                                        tweet.retweet()
+                                        print('Retweeted! - ID: ' + str(tweet.id) + ' | User:' + str(tweet.user.name)
+                                              + ' | UserID:' + str(tweet.user.id) + ' | Status: ' + str(tweet.text))
+                                        total_retweeted = total_retweeted + 1
 
-                                    time.sleep(self.retweet_period)  # Let's make this 30 secs
+                                        time.sleep(self.retweet_period)  # Let's make this 30 secs
 
                         print('-------------------------------------------------------------------')
 
