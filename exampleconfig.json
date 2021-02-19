@@ -6,17 +6,25 @@
 		"AccessToken" : "",
 		"AccessSecretToken" : ""
 	},
-	
-	"BotSettings" : 
+
+	"BotSettings" :
 	{
 		"Queries": ["#ExampleTag 1", "#ExampleTag 2"],
-		
+
 		"TotalTweetsQueried" : 20,
 		"TotalRetweetsPerBreak" : 5,
 		"StepPauseSeconds" : 0.05,
 		"RetweetPeriodSeconds" : 30,
 		"BreakTimeSeconds" : 600,
-		"EndOfQueriesPauseSeconds" : 300
+		"EndOfQueriesPauseSeconds" : 300,
+
+		"DebugMode" : "true"
 	},
-	
+
+	"MasterControl" :
+	{
+		"ScreenName" : "",
+		"UserID" : "",
+		"Password" : ""
+	}
 }

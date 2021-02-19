@@ -64,7 +64,7 @@ class RetweetBot:
                 # Look for password from owner
                 if owner_messages:
                     owner_message = owner_messages[0]
-                    if "ILikePie3.142" in owner_message.message_create['message_data']['text']:
+                    if self._master_password in owner_message.message_create['message_data']['text']:
                         if self._debug_mode:
                             print("Password entered is correct")
                         self.api.send_direct_message(message.message_create['sender_id'], "The password is correct!")
