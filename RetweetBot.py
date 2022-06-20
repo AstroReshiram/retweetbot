@@ -9,10 +9,10 @@ class RetweetBot:
         # Set up the authorization tokens
         auth = tweepy.OAuthHandler(config.key, config.secret_key)
         auth.set_access_token(config.token, config.secret_token)
-        self.api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
+        self.api = tweepy.API(auth, wait_on_rate_limit=True)
 
         # Load master controls user
-        self._master = self.api.get_user(config.master_screen_name)
+        self._master = self.api.get_user(screen_name=config.master_screen_name)
         self._master_id = config.master_user_id
         self._master_password = config.master_password
 
@@ -31,7 +31,7 @@ class RetweetBot:
         self.end_of_queries_pause = config.end_of_queries_pause
 
         # Print information about myself
-        self.me = self.api.me()
+        self.me = self.api.verify_credentials()
         print('\nName: ' + str(self.me.name))
         print('Twitter Handle: @' + str(self.me.screen_name))
         print('ID:' + str(self.me.id))
@@ -42,13 +42,13 @@ class RetweetBot:
         if self._debug_mode:
             print("Debug Mode: ON")
         # self._check_mail()
-        self._block_list = self.api.blocks_ids()
+        self._block_list = self.api.get_blocked_ids()
         self._retweet()
 
     def _check_mail(self):
         # Get list of mails
         try:
-            message_list = self.api.list_direct_messages()
+            message_list = self.api.get_direct_messages()
             owner_messages = []
 
             # Find and use only messages from the master owner
@@ -59,7 +59,7 @@ class RetweetBot:
                     # Debug only
                     if self._debug_mode:
                         print(message)
-                    self.api.destroy_direct_message(message.id)
+                    self.api.delete_direct_message(message.id)
 
                 # Look for password from owner
                 if owner_messages:
@@ -86,8 +86,8 @@ class RetweetBot:
                 if self._debug_mode:
                     print('No messages found')
 
-        except tweepy.TweepError as error:
-            print(error.reason)
+        except tweepy.TweepyException as error:
+            print(error.__cause__)
 
 
     def _retweet(self):
@@ -95,7 +95,7 @@ class RetweetBot:
 
         while True:
             for query in self.queries:
-                for tweet in tweepy.Cursor(self.api.search, query).items(self.tweets_queried):
+                for tweet in tweepy.Cursor(self.api.search_tweets, query).items(self.tweets_queried):
                     if total_retweeted > self.max_total_retweeted:
                         print('I\'ve made 5 retweets! Taking a short break!')
                         print(datetime.datetime.now())
@@ -106,7 +106,7 @@ class RetweetBot:
 
                     try:
                         print(tweet.text)
-                        if self.api.get_user(tweet.user.id).id == self.me.id:
+                        if self.api.get_user(user_id=tweet.user.id).id == self.me.id:
                             print('It\'s me! Ignoring me!')
                             time.sleep(self.step_pause)
                         else:
@@ -140,8 +140,8 @@ class RetweetBot:
 
                         print('-------------------------------------------------------------------')
 
-                    except tweepy.TweepError as e:
-                        print(e.reason)
+                    except tweepy.TweepyException as e:
+                        print(e.__cause__)
                     except StopIteration:
                         break
 
